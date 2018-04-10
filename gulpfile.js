@@ -1,12 +1,13 @@
-var gulp = require('gulp'),
+const gulp = require('gulp'),
     sass = require('gulp-sass'),
     rename = require('gulp-rename'),
     autoprefixer = require('gulp-autoprefixer'),
     rtlcss = require('gulp-rtlcss'),
-    pckg = require('./package.json');
+    pckg = require('./package.json'),
+    webpack = require('webpack-stream');
 
 gulp.task('styles', function () {
-    return gulp.src('src/assets/scss/bundle.scss', { base: '.' })
+    return gulp.src('src/assets/scss/tabler.scss', { base: '.' })
         .pipe(sass({
             precision: 8,
             outputStyle: 'expanded'
@@ -39,11 +40,27 @@ gulp.task('styles-plugins', function () {
         .pipe(gulp.dest('.'));
 });
 
-gulp.task('watch', ['styles', 'styles-plugins'], function() {
+gulp.task('copy-assets', function () {
+	const prefix = 'assets';
+	const suffix = '**/*';
+	const outputPrefix = 'public/assets';
+
+	gulp.src([`${prefix}/fonts/${suffix}`])
+		.pipe(gulp.dest(`${outputPrefix}/fonts`));
+	gulp.src([`${prefix}/images/${suffix}`])
+		.pipe(gulp.dest(`${outputPrefix}/images`));
+	gulp.src([`${prefix}/plugins/${suffix}`])
+		.pipe(gulp.dest(`${outputPrefix}/plugins`));
+});
+
+gulp.task('scripts', function () {
+});
+
+gulp.task('watch', ['styles', 'styles-plugins', 'copy-assets'], function() {
     gulp.watch('src/assets/scss/**/*.scss', ['styles']);
     gulp.watch('src/assets/plugins/**/*.scss', ['styles-plugins']);
 });
 
-gulp.task('build', ['styles', 'styles-plugins']);
+gulp.task('build', ['styles', 'styles-plugins', 'copy-assets']);
 
 gulp.task('default', ['build']);

@@ -20,7 +20,7 @@
     "jekyll-watch": "jekyll build --watch",
     "jekyll-serve": "jekyll serve --livereload",
     "gh-pages": "./gh-pages.sh",
-    "dist": "gulp build && JEKYLL_ENV=production jekyll build --destination dist",
+    "dist": "gulp build && JEKYLL_ENV=production jekyll build --destination public",
     "publish-dist": "./gh-pages.sh",
     "watch": "gulp build && npm-run-all --parallel gulp-watch jekyll-watch",
     "serve": "gulp build && npm-run-all --parallel gulp-watch jekyll-serve"
@@ -40,10 +40,13 @@
     "gulp-rename": "^1.2.2",
     "gulp-rtlcss": "^1.2.0",
     "gulp-sass": "^3.1.0",
-    "npm-run-all": "^4.1.2"
+    "npm-run-all": "^4.1.2",
+    "webpack-stream": "^4.0.3"
   },
   "dependencies": {
-    "bootstrap": "^4.0.0"
+    "bootstrap": "^4.0.0",
+    "jquery": "^3.3.1",
+    "popper.js": "^1.14.3"
   },
   "files": [
     "dist/",
