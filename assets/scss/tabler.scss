@@ -2,6 +2,19 @@
 Dashboard UI
  */
 
-@import 'variables';
-@import '~bootstrap/scss/bootstrap.scss';
-@import 'dashboard/dashboard';
+@import './variables';
+
+// ~ (tilde) alias for node_modules only works on webpack
+// i.e.: this file is not processed through webpack
+@import '../../node_modules/bootstrap/scss/bootstrap.scss';
+@import '../../node_modules/c3/c3.css';
+@import '../../node_modules/fullcalendar/dist/fullcalendar.css';
+@import '../../node_modules/iconfonts/stylesheets/elusive.scss';
+@import '../../node_modules/iconfonts/stylesheets/font-awesome.scss';
+@import '../../node_modules/iconfonts/stylesheets/foundicons-general.scss';
+@import '../../node_modules/iconfonts/stylesheets/ionicons.scss';
+@import '../../node_modules/iconfonts/stylesheets/ionicons@2.scss';
+@import '../../node_modules/iconfonts/stylesheets/ionicons@3.scss';
+@import '../../node_modules/iconfonts/stylesheets/paymentfont.scss';
+
+@import './dashboard/dashboard';

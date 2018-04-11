@@ -1,43 +1,34 @@
-const gulp = require('gulp'),
-    sass = require('gulp-sass'),
-    rename = require('gulp-rename'),
-    autoprefixer = require('gulp-autoprefixer'),
-    rtlcss = require('gulp-rtlcss'),
-    pckg = require('./package.json'),
-    webpack = require('webpack-stream');
+const gulp = require('gulp')
+const sass = require('gulp-sass')
+const rename = require('gulp-rename')
+const autoprefixer = require('gulp-autoprefixer')
+const rtlcss = require('gulp-rtlcss')
+const pckg = require('./package.json')
+const webpack = require('webpack-stream')
+const path = require('path')
+const MinifyPlugin = require("babel-minify-webpack-plugin")
+const isDev = process.env.NODE_ENV !== 'production'
 
 gulp.task('styles', function () {
-    return gulp.src('src/assets/scss/tabler.scss', { base: '.' })
-        .pipe(sass({
-            precision: 8,
-            outputStyle: 'expanded'
-        }).on('error', sass.logError))
-        .pipe(autoprefixer({
-            browsers: pckg.browserslist,
-            cascade: false
-        }))
-        .pipe(rename('dashboard.css'))
-        .pipe(gulp.dest('src/assets/css/'))
+	const outputStyle = isDev ? 'expanded' : 'compressed';
 
-        .pipe(rtlcss())
-        .pipe(rename('dashboard.rtl.css'))
-        .pipe(gulp.dest('src/assets/css/'));
-});
+	return gulp.src('assets/scss/tabler.scss', { base: '.' })
+		.pipe(sass({
+			precision: 8,
+			outputStyle: outputStyle,
+			importer: require('node-sass-importer'),
+		}).on('error', sass.logError))
+		.pipe(autoprefixer({
+			browsers: pckg.browserslist,
+			cascade: false
+		}))
+		.pipe(rename('tabler.css'))
+		.pipe(gulp.dest(path.resolve('src/assets/css')))
 
-gulp.task('styles-plugins', function () {
-    return gulp.src('src/assets/plugins/**/plugin.scss', { base: '.' })
-        .pipe(sass({
-            precision: 6,
-            outputStyle: 'expanded'
-        }).on('error', sass.logError))
-        .pipe(autoprefixer({
-            browsers: pckg.browserslist,
-            cascade: false
-        }))
-        .pipe(rename(function(path) {
-            path.extname = '.css';
-        }))
-        .pipe(gulp.dest('.'));
+		.pipe(rtlcss())
+		.pipe(rename('tabler.rtl.css'))
+		.pipe(gulp.dest(path.resolve('src/assets/css')))
+	;
 });
 
 gulp.task('copy-assets', function () {
@@ -46,21 +37,46 @@ gulp.task('copy-assets', function () {
 	const outputPrefix = 'public/assets';
 
 	gulp.src([`${prefix}/fonts/${suffix}`])
-		.pipe(gulp.dest(`${outputPrefix}/fonts`));
+		.pipe(gulp.dest(`${outputPrefix}/fonts`))
+
 	gulp.src([`${prefix}/images/${suffix}`])
-		.pipe(gulp.dest(`${outputPrefix}/images`));
-	gulp.src([`${prefix}/plugins/${suffix}`])
-		.pipe(gulp.dest(`${outputPrefix}/plugins`));
+		.pipe(gulp.dest(`${outputPrefix}/images`))
+
+	return gulp.src([`${prefix}/js/{core,tabler}.js`])
+		.pipe(gulp.dest(`${outputPrefix}/js`));
 });
 
-gulp.task('scripts', function () {
+gulp.task('vendor-scripts', function () {
+	const plugins = !isDev ? [new MinifyPlugin()] : [];
+	return gulp.src('assets/js/vendor.js')
+		.pipe(webpack({
+			module: {
+				rules: [{
+					test: require.resolve('jquery'),
+					use: [{
+						loader: 'expose-loader',
+						options: '$'
+					}]
+				}]
+			},
+			output: {
+				path: path.resolve('public/assets/js'),
+				filename: 'vendor.js'
+			},
+			plugins: plugins,
+		}))
+		.pipe(gulp.dest('src/assets/js'));
 });
 
-gulp.task('watch', ['styles', 'styles-plugins', 'copy-assets'], function() {
-    gulp.watch('src/assets/scss/**/*.scss', ['styles']);
-    gulp.watch('src/assets/plugins/**/*.scss', ['styles-plugins']);
-});
+gulp.task(
+	'watch',
+	['copy-assets', 'styles', 'vendor-scripts'],
+	function () {
+		gulp.watch('assets/scss/**/*.scss', ['styles']);
+		gulp.watch('assets/js/**/*.js', ['vendor-scripts']);
+	}
+);
 
-gulp.task('build', ['styles', 'styles-plugins', 'copy-assets']);
+gulp.task('build', ['copy-assets', 'styles', 'vendor-scripts']);
 
 gulp.task('default', ['build']);
